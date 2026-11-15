@@ -92,6 +92,109 @@ final class QueueTests: XCTestCase {
         XCTAssertNil(q.current)
     }
 
+    // MARK: - Removing
+
+    func testRemoveBeforeCurrentKeepsTheSameTrackCurrent() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.select(2)
+        XCTAssertFalse(q.remove(at: 0), "the current track was not the one removed")
+        XCTAssertEqual(q.items, [url("b"), url("c")])
+        XCTAssertEqual(q.current, url("c"))
+    }
+
+    func testRemoveAfterCurrentKeepsTheSameTrackCurrent() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        XCTAssertFalse(q.remove(at: 2))
+        XCTAssertEqual(q.items, [url("a"), url("b")])
+        XCTAssertEqual(q.current, url("a"))
+    }
+
+    func testRemoveCurrentMovesToTheTrackThatFollowed() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.select(1)
+        XCTAssertTrue(q.remove(at: 1), "the current track was the one removed")
+        XCTAssertEqual(q.items, [url("a"), url("c")])
+        XCTAssertEqual(q.current, url("c"))
+    }
+
+    func testRemoveCurrentAtTheEndFallsBackToTheNewLastTrack() {
+        var q = Playlist()
+        q.append([url("a"), url("b")])
+        q.select(1)
+        XCTAssertTrue(q.remove(at: 1))
+        XCTAssertEqual(q.current, url("a"))
+    }
+
+    func testRemoveOnlyTrackEmptiesTheQueue() {
+        var q = Playlist()
+        q.append([url("a")])
+        XCTAssertTrue(q.remove(at: 0))
+        XCTAssertTrue(q.isEmpty)
+        XCTAssertNil(q.currentIndex)
+    }
+
+    func testRemoveOutOfRangeChangesNothing() {
+        var q = Playlist()
+        q.append([url("a"), url("b")])
+        XCTAssertFalse(q.remove(at: 5))
+        XCTAssertFalse(q.remove(at: -1))
+        XCTAssertEqual(q.items, [url("a"), url("b")])
+        XCTAssertEqual(q.current, url("a"))
+    }
+
+    // MARK: - Reordering (same contract as SwiftUI's onMove: offsets + insertion point)
+
+    func testMoveTrackDownReordersItems() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.move(fromOffsets: IndexSet(integer: 0), toOffset: 3)
+        XCTAssertEqual(q.items, [url("b"), url("c"), url("a")])
+    }
+
+    func testMoveTrackUpReordersItems() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.move(fromOffsets: IndexSet(integer: 2), toOffset: 0)
+        XCTAssertEqual(q.items, [url("c"), url("a"), url("b")])
+    }
+
+    func testMovingTheCurrentTrackKeepsItCurrent() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.move(fromOffsets: IndexSet(integer: 0), toOffset: 2)
+        XCTAssertEqual(q.items, [url("b"), url("a"), url("c")])
+        XCTAssertEqual(q.current, url("a"))
+        XCTAssertEqual(q.currentIndex, 1)
+    }
+
+    func testMovingAnotherTrackPastTheCurrentOneKeepsItCurrent() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c")])
+        q.select(1)
+        q.move(fromOffsets: IndexSet(integer: 2), toOffset: 0)
+        XCTAssertEqual(q.current, url("b"))
+        XCTAssertEqual(q.currentIndex, 2)
+    }
+
+    func testMoveSeveralTracksKeepsTheirRelativeOrder() {
+        var q = Playlist()
+        q.append([url("a"), url("b"), url("c"), url("d")])
+        q.move(fromOffsets: IndexSet([0, 2]), toOffset: 4)
+        XCTAssertEqual(q.items, [url("b"), url("d"), url("a"), url("c")])
+    }
+
+    func testMoveWithOutOfRangeOffsetsChangesNothing() {
+        var q = Playlist()
+        q.append([url("a"), url("b")])
+        q.move(fromOffsets: IndexSet(integer: 7), toOffset: 0)
+        q.move(fromOffsets: IndexSet(integer: 0), toOffset: 9)
+        XCTAssertEqual(q.items, [url("a"), url("b")])
+        XCTAssertEqual(q.current, url("a"))
+    }
+
     // MARK: - Supported file filtering
 
     func testSupportedAudioFilterKeepsOnlyAudioExtensions() {

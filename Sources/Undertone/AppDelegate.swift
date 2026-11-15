@@ -18,6 +18,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         let content = NSHostingController(rootView: ContentView(viewModel: viewModel))
+        // Report the SwiftUI content's size to the popover as it changes (the queue
+        // drawer opening, rows being added). Without this the popover keeps the size it
+        // first measured, and the next time it opens it is placed for that stale size:
+        // a taller popover then hangs off the top of the screen.
+        content.sizingOptions = [.preferredContentSize]
         popover.contentViewController = content
         popover.behavior = .transient
         popover.animates = true
@@ -84,5 +89,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showPopover() {
         guard let button = statusItem?.button else { return }
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        // Clicking a status item does not activate a menu-bar app, so the popover would
+        // open in a window that is not key. The first click or drag on a queue row in
+        // such a window only activates it and is otherwise lost.
+        NSApp.activate(ignoringOtherApps: true)
+        popover.contentViewController?.view.window?.makeKey()
     }
 }

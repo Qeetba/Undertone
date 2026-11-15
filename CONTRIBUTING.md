@@ -40,6 +40,9 @@ open dist/Undertone.app
 One smoke test checks each file format and is skipped unless its fixtures exist. `Scripts/generate-fixtures.sh`
 creates them and needs `ffmpeg`.
 
+`Scripts/release.sh` signs with a Developer ID certificate and notarizes the result. Only the maintainer
+needs it.
+
 The tests never change your default apps: the code that talks to Launch Services and to saved settings is
 reached through small protocols, and the tests substitute fakes.
 

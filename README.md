@@ -178,6 +178,10 @@ change to how the popover looks, redo them:
   native formats depends on macOS. There are no streaming services or library indexing.
 - The bundle is signed ad hoc for local use, not notarized for distribution.
 
+## License
+
+Licensed under Apache License 2.0; see [LICENSE](LICENSE).
+
 ---
 
 <p align="center">Made in Seattle with ❤️ by Qeetba Records</p>

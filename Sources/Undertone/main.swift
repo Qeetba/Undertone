@@ -17,7 +17,8 @@ if let index = CommandLine.arguments.firstIndex(of: "--render-preview") {
         try MainActor.assumeIsolated {
             try PreviewRenderer.render(
                 to: CommandLine.arguments[index + 1],
-                showDefaultPlayerOffer: CommandLine.arguments.contains(DefaultPlayerOffer.launchArgument)
+                showDefaultPlayerOffer: CommandLine.arguments.contains(DefaultPlayerOffer.launchArgument),
+                queueOpen: CommandLine.arguments.contains("--queue-open")
             )
         }
         exit(0)

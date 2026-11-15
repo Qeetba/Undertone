@@ -4,10 +4,21 @@ import Foundation
 import UniformTypeIdentifiers
 
 public struct QueueItem: Identifiable, Equatable {
-    public let id: Int
+    /// The file itself identifies a row (the queue holds no duplicates), so a row
+    /// keeps its identity when it is moved or when a row above it is removed.
+    public var id: URL { url }
+    /// Position in the queue right now.
+    public let index: Int
     public let url: URL
     public let name: String
     public let isCurrent: Bool
+
+    public init(index: Int, url: URL, name: String, isCurrent: Bool) {
+        self.index = index
+        self.url = url
+        self.name = name
+        self.isCurrent = isCurrent
+    }
 }
 
 /// Observable view model bridging PlayerController to SwiftUI.
@@ -77,8 +88,17 @@ public final class NowPlayingViewModel: ObservableObject {
         refresh()
     }
 
-    /// Shows an Open panel and hands the picked files to the queue.
+    /// Shows an Open panel; the picked files replace the queue and play.
     public func openFilesPanel() {
+        if let urls = pickAudioFiles() { handleOpenedFiles(urls) }
+    }
+
+    /// Shows an Open panel; the picked files join the end of the queue.
+    public func addToQueuePanel() {
+        if let urls = pickAudioFiles() { addToQueue(urls) }
+    }
+
+    private func pickAudioFiles() -> [URL]? {
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
@@ -87,8 +107,30 @@ public final class NowPlayingViewModel: ObservableObject {
         panel.allowedContentTypes = [.audio]
         NSApp.activate(ignoringOtherApps: true)
         let response = panel.runModal()
-        guard response == .OK, !panel.urls.isEmpty else { return }
-        handleOpenedFiles(panel.urls)
+        guard response == .OK, !panel.urls.isEmpty else { return nil }
+        return panel.urls
+    }
+
+    // MARK: - Editing the queue
+
+    /// Adds files after everything already queued. What is playing keeps playing.
+    public func addToQueue(_ urls: [URL]) {
+        let supported = SupportedAudio.filter(urls)
+        guard !supported.isEmpty else {
+            errorMessage = "No playable audio files in selection."
+            return
+        }
+        errorMessage = nil
+        player.enqueue(urls: supported)
+        refresh()
+    }
+
+    public func removeFromQueue(at index: Int) { player.removeTrack(at: index); refresh() }
+
+    /// Drag-to-reorder; the arguments are exactly what SwiftUI's `onMove` hands over.
+    public func moveQueueItems(fromOffsets source: IndexSet, toOffset destination: Int) {
+        player.moveTracks(fromOffsets: source, toOffset: destination)
+        refresh()
     }
 
     public func quitApp() {
@@ -153,7 +195,7 @@ public final class NowPlayingViewModel: ObservableObject {
         currentIndex = player.playlist.currentIndex
         let items = player.playlist.items
         queueItems = items.enumerated().map { i, url in
-            QueueItem(id: i, url: url, name: url.deletingPathExtension().lastPathComponent, isCurrent: i == currentIndex)
+            QueueItem(index: i, url: url, name: url.deletingPathExtension().lastPathComponent, isCurrent: i == currentIndex)
         }
     }
 

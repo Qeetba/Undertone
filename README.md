@@ -16,6 +16,14 @@ queue, transport controls, seek, volume and metadata/artwork display.
   multi-file selection becomes a queue with previous/next and auto-advance
 - Errors are shown visibly in the popover banner (bad file, decode failure, etc.)
 
+## Install
+
+Download the latest `Undertone-<version>.zip` from
+[Releases](https://github.com/Qeetba/Undertone/releases/latest), unzip it and move
+`Undertone.app` to Applications. Releases are signed with a Developer ID and
+notarized by Apple, so the app opens without a Gatekeeper warning. They are
+universal (Apple silicon and Intel) and need macOS 14 or later.
+
 ## Build
 
 ```sh
@@ -24,8 +32,14 @@ open dist/Undertone.app
 ```
 
 `build.sh` produces **dist/Undertone.app**, ad-hoc signed (`codesign --sign -`)
-with a proper `Info.plist` (`LSUIElement`, audio document associations).
-The first launch may require right-click → **Open** to satisfy Gatekeeper.
+with a proper `Info.plist` (`LSUIElement`, audio document associations), for the
+Mac it runs on. The first launch of a local build may require right-click →
+**Open** to satisfy Gatekeeper.
+
+`Scripts/release.sh` makes the distributed build: universal, signed with a
+Developer ID certificate, notarized and zipped in `.build/dist`. It needs the
+maintainer's certificate and notary credentials; the script's header says how
+they are set up.
 
 ## Development
 
@@ -141,6 +155,7 @@ Tests/UndertoneTests/        QueueTests, QueueEditingTests, AudioBandsTests, Def
 Resources/Info.plist         bundle config: LSUIElement, document types
 docs/screenshots/            the pictures at the top of this file
 build.sh                     release build → dist/Undertone.app
+Scripts/release.sh           signed, notarized, universal zip → .build/dist (maintainer only)
 ```
 
 ## Install and preview
@@ -176,7 +191,8 @@ change to how the popover looks, redo them:
   the actual Finder interaction and interactive popover controls still need a manual check.
 - Encrypted/DRM audio and Ogg/Vorbis are not supported. Decoder support for other
   native formats depends on macOS. There are no streaming services or library indexing.
-- The bundle is signed ad hoc for local use, not notarized for distribution.
+- Local builds are signed ad hoc. Released builds are Developer ID signed and notarized.
+- The Intel half of a release has only been run under Rosetta, not on an Intel Mac.
 
 ## License
 

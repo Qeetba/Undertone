@@ -5,7 +5,11 @@ import UndertoneCore
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let viewModel = NowPlayingViewModel()
+    let viewModel = NowPlayingViewModel(defaultPlayer: DefaultPlayerOffer(
+        system: WorkspaceDefaultAppSystem(),
+        store: UserDefaultsAnswerStore(),
+        forceOffer: CommandLine.arguments.contains(DefaultPlayerOffer.launchArgument)
+    ))
     let popover = NSPopover()
     var statusItem: NSStatusItem?
 
@@ -29,6 +33,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         statusItem = item
 
+        // First run: drop the popover open so the offer is seen, and so a new
+        // user learns where a menu-bar-only app lives.
+        if viewModel.showDefaultPlayerOffer {
+            showOfferPopover(attemptsLeft: 20)
+        }
+    }
+
+    /// The status item needs a moment to land in the menu bar before a popover
+    /// can anchor to it. Retries briefly, then gives up; the card is still there
+    /// whenever the user opens the popover themselves.
+    private func showOfferPopover(attemptsLeft: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self, self.viewModel.showDefaultPlayerOffer, !self.popover.isShown else { return }
+            guard self.statusItem?.button?.window != nil else {
+                if attemptsLeft > 0 { self.showOfferPopover(attemptsLeft: attemptsLeft - 1) }
+                return
+            }
+            NSApp.activate(ignoringOtherApps: true)
+            self.showPopover()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

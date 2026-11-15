@@ -28,11 +28,18 @@ public final class NowPlayingViewModel: ObservableObject {
     @Published public var currentIndex: Int?
     @Published public var errorMessage: String?
     @Published public var isScrubbing = false
+    /// True while the first-run "make default player" card is waiting for an answer.
+    @Published public var showDefaultPlayerOffer = false
 
     private var timer: Timer?
     private var metadataTask: Task<Void, Never>?
+    private let defaultPlayer: DefaultPlayerOffer?
 
-    public init() {
+    /// - Parameter defaultPlayer: the first-run offer, or nil where there is nothing
+    ///   to offer (tests, previews, the smoke test).
+    public init(defaultPlayer: DefaultPlayerOffer? = nil) {
+        self.defaultPlayer = defaultPlayer
+        showDefaultPlayerOffer = defaultPlayer?.shouldOffer() ?? false
         player.onChange = { [weak self] in self?.refresh() }
         player.onTrackLoaded = { [weak self] in self?.loadMetadataForCurrentTrack() }
         player.onError = { [weak self] message in
@@ -106,6 +113,27 @@ public final class NowPlayingViewModel: ObservableObject {
     }
 
     public func dismissError() { errorMessage = nil }
+
+    // MARK: - First-run default player offer
+
+    /// "Make default": the card goes away on the click; a failure lands in the error banner.
+    public func acceptDefaultPlayerOffer() {
+        guard let defaultPlayer, showDefaultPlayerOffer else { return }
+        showDefaultPlayerOffer = false
+        Task { [weak self] in
+            do {
+                try await defaultPlayer.accept()
+            } catch {
+                self?.errorMessage = "Couldn't make Undertone the default player. In Finder, choose Get Info on a music file, then Open with → Change All."
+            }
+        }
+    }
+
+    /// "Not now": never asked again.
+    public func declineDefaultPlayerOffer() {
+        defaultPlayer?.decline()
+        showDefaultPlayerOffer = false
+    }
 
     // MARK: - State refresh
 

@@ -4,7 +4,7 @@ import UndertoneCore
 
 @MainActor
 enum PreviewRenderer {
-    static func render(to path: String) throws {
+    static func render(to path: String, showDefaultPlayerOffer: Bool = false) throws {
         _ = NSApplication.shared
         NSApp.setActivationPolicy(.accessory)
         let model = NowPlayingViewModel()
@@ -13,6 +13,7 @@ enum PreviewRenderer {
         model.duration = 168.5
         model.currentTime = 64
         model.isPlaying = true
+        model.showDefaultPlayerOffer = showDefaultPlayerOffer
         let renderer = ImageRenderer(content: ContentView(viewModel: model))
         renderer.scale = 2
         guard let image = renderer.cgImage else {

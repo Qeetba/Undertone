@@ -41,10 +41,34 @@ swift run Undertone --smoke-test
 UNDERTONE_SMOKE_TEST=1 swift test   # all tests, including natural queue completion
 ```
 
-## Using Undertone as the default app in Finder
+## Becoming the default player
+
+The first time Undertone runs from its `.app` bundle, the popover opens by itself
+with a card: **Make Undertone your default player for music files?**
+
+- **Make default** sets Undertone as the default app for MP3, M4A, FLAC, AIFF and WAV.
+- **Not now** changes nothing.
+
+Either answer is remembered and Undertone never asks again. The card waits until
+one of the two buttons is clicked; closing the popover is not an answer. It is
+skipped when Undertone already opens all five formats, and deferred while macOS
+is running a freshly downloaded copy from a temporary location.
+
+To see the card again, quit Undertone (power button in the popover) and launch
+it with `--offer-default-player`:
+
+```sh
+open dist/Undertone.app --args --offer-default-player
+```
+
+That shows it for that one launch, whatever answer was saved. The argument only
+reaches a newly started app; if Undertone is still running, `open` just brings
+the existing one forward and no card appears.
+
+### Setting it by hand in Finder
 
 Because it's ad-hoc signed, macOS may initially pick another player. To make
-Undertone the default:
+Undertone the default without the card:
 
 1. Right-click (or Ctrl-click) an audio file in Finder → **Get Info**.
 2. Under **Open with**, choose **Undertone**.
@@ -82,9 +106,10 @@ starts immediately. Multiple selected files open as a queue.
 
 ```
 Package.swift
-Sources/UndertoneCore/       Playlist, PlayerController, MetadataLoader, ViewModel, SmokeTest
+Sources/UndertoneCore/       Playlist, PlayerController, MetadataLoader, ViewModel, SmokeTest,
+                             DefaultPlayerOffer (first-run default-player prompt)
 Sources/Undertone/           main.swift, AppDelegate (status item + popover), ContentView
-Tests/UndertoneTests/        QueueTests, SmokeTests (env-gated real playback)
+Tests/UndertoneTests/        QueueTests, DefaultPlayerOfferTests, SmokeTests (env-gated real playback)
 Resources/Info.plist         bundle config: LSUIElement, document types
 build.sh                     release build → dist/Undertone.app
 ```
@@ -93,7 +118,8 @@ build.sh                     release build → dist/Undertone.app
 
 Keep a single copy of Undertone in `~/Applications` (or `/Applications`) before
 setting Finder associations, so rebuild copies do not confuse Launch Services.
-Installation and default-app changes are manual; the build never does either.
+Installation is manual and the build never changes default apps; only the running
+app does, and only when **Make default** is clicked.
 
 ```sh
 mkdir -p ~/Applications

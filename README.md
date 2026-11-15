@@ -103,16 +103,31 @@ starts immediately. Multiple selected files open as a queue.
 | Add to the queue | "Add to queue" under the open queue; what is playing keeps playing |
 | Remove from the queue | Hover a queue row, click its ✕ |
 | Reorder the queue | Drag a queue row |
+| Waves on / off | Click the waveform logo, top left |
 | Quit | Power button, top right |
+
+### Waves
+
+Three waves move behind the controls in time with the music: bass drives the big
+slow one, mids the middle one and treble the fine ripple in front. They are drawn
+from the samples of the file at the playback position, so they follow the song
+itself rather than only its loudness.
+
+Clicking the waveform logo turns them off and on, and the choice is remembered.
+Pointing at the logo shows what a click will do ("HIDE WAVES" / "SHOW WAVES").
+Until it has been clicked they follow the macOS **Reduce motion** setting (off when
+it is on). They only animate while the popover is open.
 
 ## Layout
 
 ```
 Package.swift
 Sources/UndertoneCore/       Playlist, PlayerController, MetadataLoader, ViewModel, SmokeTest,
-                             DefaultPlayerOffer (first-run default-player prompt)
-Sources/Undertone/           main.swift, AppDelegate (status item + popover), ContentView
-Tests/UndertoneTests/        QueueTests, QueueEditingTests, DefaultPlayerOfferTests,
+                             DefaultPlayerOffer (first-run default-player prompt),
+                             AudioBands, TrackAnalyzer, WaveDrive (what the waves listen to)
+Sources/Undertone/           main.swift, AppDelegate (status item + popover), ContentView,
+                             WaveBackdrop (the waves)
+Tests/UndertoneTests/        QueueTests, QueueEditingTests, AudioBandsTests, DefaultPlayerOfferTests,
                              SmokeTests (env-gated real playback)
 Resources/Info.plist         bundle config: LSUIElement, document types
 build.sh                     release build → dist/Undertone.app

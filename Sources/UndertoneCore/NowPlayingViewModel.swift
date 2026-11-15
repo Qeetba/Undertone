@@ -41,6 +41,9 @@ public final class NowPlayingViewModel: ObservableObject {
     @Published public var isScrubbing = false
     /// True while the first-run "make default player" card is waiting for an answer.
     @Published public var showDefaultPlayerOffer = false
+    /// True while the popover is on screen. The visualizer only animates then, so a
+    /// closed popover costs nothing.
+    @Published public var isPopoverVisible = false
 
     private var timer: Timer?
     private var metadataTask: Task<Void, Never>?
@@ -155,6 +158,9 @@ public final class NowPlayingViewModel: ObservableObject {
     }
 
     public func dismissError() { errorMessage = nil }
+
+    /// Bass, mid and treble levels of what is playing right now, for the visualizer.
+    public func visualizerBands() -> AudioBands { player.currentBands() }
 
     // MARK: - First-run default player offer
 

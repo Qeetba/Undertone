@@ -46,6 +46,41 @@ public final class PlayerController: NSObject {
         loadCurrent(autoplay: playImmediately)
     }
 
+    /// Adds files to the end of the queue without touching what is playing.
+    /// Adding to an empty queue starts playing the first file.
+    public func enqueue(urls: [URL]) {
+        let supported = SupportedAudio.filter(urls)
+        guard !supported.isEmpty else {
+            onError?("No supported audio files could be queued.")
+            return
+        }
+        let wasEmpty = playlist.isEmpty
+        playlist.append(supported)
+        if wasEmpty {
+            loadCurrent(autoplay: true)
+        } else {
+            onChange?()
+        }
+    }
+
+    /// Removes one track from the queue. Removing the current track moves on to the one
+    /// that followed it, still playing if it was playing; with nothing following, playback
+    /// stops on the last remaining track. Removing any other track leaves playback alone.
+    public func removeTrack(at index: Int) {
+        let keepPlaying = isPlaying && index + 1 < playlist.count
+        if playlist.remove(at: index) {
+            loadCurrent(autoplay: keepPlaying)
+        } else {
+            onChange?()
+        }
+    }
+
+    /// Reorders the queue (same contract as SwiftUI's `onMove`). Playback is untouched.
+    public func moveTracks(fromOffsets source: IndexSet, toOffset destination: Int) {
+        playlist.move(fromOffsets: source, toOffset: destination)
+        onChange?()
+    }
+
     public func togglePlay() {
         if isPlaying { pause() } else { play() }
     }

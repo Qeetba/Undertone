@@ -94,13 +94,16 @@ starts immediately. Multiple selected files open as a queue.
 | Action | Where |
 | --- | --- |
 | Show/hide player | Click the waveform icon in the menu bar |
-| Open files | "Open files" button, or open from Finder |
+| Open files | "Open files" button, or open from Finder; replaces the queue and plays |
 | Play / pause | Center transport button |
 | Previous / next | Side transport buttons (next auto-fires on track end) |
 | Seek | Progress slider |
 | Volume | Bottom slider |
 | Show queue / pick track | Click "Queue", then a row |
-| Quit | Power button in the footer |
+| Add to the queue | "Add to queue" under the open queue; what is playing keeps playing |
+| Remove from the queue | Hover a queue row, click its ✕ |
+| Reorder the queue | Drag a queue row |
+| Quit | Power button, top right |
 
 ## Layout
 
@@ -109,7 +112,8 @@ Package.swift
 Sources/UndertoneCore/       Playlist, PlayerController, MetadataLoader, ViewModel, SmokeTest,
                              DefaultPlayerOffer (first-run default-player prompt)
 Sources/Undertone/           main.swift, AppDelegate (status item + popover), ContentView
-Tests/UndertoneTests/        QueueTests, DefaultPlayerOfferTests, SmokeTests (env-gated real playback)
+Tests/UndertoneTests/        QueueTests, QueueEditingTests, DefaultPlayerOfferTests,
+                             SmokeTests (env-gated real playback)
 Resources/Info.plist         bundle config: LSUIElement, document types
 build.sh                     release build → dist/Undertone.app
 ```
@@ -126,6 +130,7 @@ mkdir -p ~/Applications
 cp -R dist/Undertone.app ~/Applications/
 # Optional static UI preview (creates a PNG and exits; no menu-bar app left running):
 ./build.sh --render-preview /tmp/undertone-preview.png
+./build.sh --render-preview /tmp/undertone-queue.png --queue-open   # with the queue drawer open
 ```
 
 ## Verification and limits

@@ -66,16 +66,39 @@ public struct Playlist: Equatable {
     /// to the item that follows it, or to the last remaining item; nil if the queue is empty.
     @discardableResult
     public mutating func dropCurrent() -> URL? {
-        guard let idx = index, items.indices.contains(idx) else { return nil }
-        items.remove(at: idx)
-        if items.isEmpty {
-            index = nil
-        } else if idx >= items.count {
-            index = items.count - 1
-        } else {
-            index = idx
-        }
+        guard let index else { return nil }
+        remove(at: index)
         return current
+    }
+
+    /// Removes the item at `i`. Any other track that was current stays current. If the
+    /// current track is the one removed, the selection moves to the item that followed it,
+    /// or to the last remaining item. Returns true when the current track was the one removed.
+    @discardableResult
+    public mutating func remove(at i: Int) -> Bool {
+        guard items.indices.contains(i) else { return false }
+        let removedCurrent = i == index
+        items.remove(at: i)
+        if let index, i < index {
+            self.index = index - 1
+        } else if removedCurrent {
+            index = items.isEmpty ? nil : min(i, items.count - 1)
+        }
+        return removedCurrent
+    }
+
+    /// Moves the items at `source` so they sit before the item currently at `destination`
+    /// (`count` means the end), keeping their relative order. The current track stays
+    /// current wherever it lands. Same contract as SwiftUI's `onMove`.
+    public mutating func move(fromOffsets source: IndexSet, toOffset destination: Int) {
+        guard source.allSatisfy(items.indices.contains), (0...items.count).contains(destination) else { return }
+        let playing = current
+        let moving = source.map { items[$0] }
+        let insertion = destination - source.count(in: 0..<destination)
+        for i in source.reversed() { items.remove(at: i) }
+        items.insert(contentsOf: moving, at: insertion)
+        // URLs are unique in the queue, so the playing track can be found again by URL.
+        if let playing { index = items.firstIndex(of: playing) }
     }
 }
 

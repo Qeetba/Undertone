@@ -6,7 +6,7 @@ swift build -c release
 BIN="$(swift build -c release --show-bin-path)/Undertone"
 
 if [[ "${1:-}" == "--render-preview" ]]; then
-    "$BIN" --render-preview "${2:?Provide an output PNG path}"
+    "$BIN" --render-preview "${2:?Provide an output PNG path}" "${@:3}"
     exit 0
 fi
 

@@ -32,6 +32,23 @@ public final class PlayerController: NSObject {
     public var currentTime: TimeInterval { player?.currentTime ?? 0 }
     public var duration: TimeInterval { player?.duration ?? 0 }
 
+    // MARK: - Visualizer
+
+    /// Opened on first use, so nothing is decoded twice unless something is watching.
+    private var analyzer: TrackAnalyzer?
+    private var analysisUnavailable = false
+
+    /// The bass, mid and treble levels of the audio being played right now.
+    /// Silent while paused, with nothing loaded, or for a file that cannot be analyzed.
+    public func currentBands() -> AudioBands {
+        guard isPlaying, let player, let url = currentURL else { return .silent }
+        if analyzer == nil, !analysisUnavailable {
+            analyzer = try? TrackAnalyzer(url: url)
+            analysisUnavailable = analyzer == nil
+        }
+        return analyzer?.bands(at: player.currentTime) ?? .silent
+    }
+
     // MARK: - Queue control
 
     /// Replaces the queue with the given files and (optionally) starts playing the first one.
@@ -142,6 +159,8 @@ public final class PlayerController: NSObject {
             self.player = nil
         }
         isPlaying = false
+        analyzer = nil
+        analysisUnavailable = false
 
         // Iterative recovery avoids recursion for a queue of unreadable files.
         while let url = playlist.current {

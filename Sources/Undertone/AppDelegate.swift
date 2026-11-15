@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import UndertoneCore
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     let viewModel = NowPlayingViewModel(defaultPlayer: DefaultPlayerOffer(
         system: WorkspaceDefaultAppSystem(),
         store: UserDefaultsAnswerStore(),
@@ -25,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         content.sizingOptions = [.preferredContentSize]
         popover.contentViewController = content
         popover.behavior = .transient
+        popover.delegate = self
         popover.animates = true
         // Force the dark polished look regardless of system appearance.
         popover.appearance = NSAppearance(named: .darkAqua)
@@ -94,5 +95,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // such a window only activates it and is otherwise lost.
         NSApp.activate(ignoringOtherApps: true)
         popover.contentViewController?.view.window?.makeKey()
+    }
+
+    func popoverWillShow(_ notification: Notification) {
+        viewModel.isPopoverVisible = true
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        viewModel.isPopoverVisible = false
     }
 }

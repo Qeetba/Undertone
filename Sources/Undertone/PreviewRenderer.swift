@@ -17,6 +17,7 @@ enum PreviewRenderer {
         model.currentTime = 64
         model.isPlaying = true
         model.showDefaultPlayerOffer = showDefaultPlayerOffer
+        model.isPopoverVisible = true
         if queueOpen {
             let names = ["Paper Lanterns", "Tomorrow isn't coming", "Low Tide", "Glass Morning"]
             model.queueItems = names.enumerated().map { i, name in
@@ -24,7 +25,9 @@ enum PreviewRenderer {
             }
         }
 
-        let host = NSHostingView(rootView: ContentView(viewModel: model, queueExpanded: queueOpen))
+        let host = NSHostingView(rootView: ContentView(
+            viewModel: model, queueExpanded: queueOpen,
+            stillWaves: AudioBands(low: 0.2, mid: 0.08, high: 0.03)))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: host.fittingSize),
                               styleMask: .borderless, backing: .buffered, defer: false)
         window.appearance = NSAppearance(named: .darkAqua)

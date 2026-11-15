@@ -10,19 +10,42 @@ struct ContentView: View {
     @ObservedObject var viewModel: NowPlayingViewModel
     @State private var queueExpanded: Bool
     @State private var hoveredRow: QueueItem.ID?
+    /// The waves behind the controls. Unset until the logo is clicked, and until then
+    /// they follow the system's Reduce Motion setting.
+    @AppStorage("wavesEnabled") private var wavesSetting: Bool?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var logoHovered = false
+    private let stillWaves: AudioBands?
     /// The row being dragged to a new place in the queue, if any.
     @State private var drag: RowDrag?
 
-    init(viewModel: NowPlayingViewModel, queueExpanded: Bool = false) {
+    /// - Parameter stillWaves: draw the waves frozen at these levels, for a still preview.
+    init(viewModel: NowPlayingViewModel, queueExpanded: Bool = false, stillWaves: AudioBands? = nil) {
         self.viewModel = viewModel
+        self.stillWaves = stillWaves
         _queueExpanded = State(initialValue: queueExpanded)
     }
+
+    private var wavesOn: Bool { stillWaves != nil || (wavesSetting ?? !reduceMotion) }
 
     var body: some View {
         VStack(spacing: 14) {
             HStack(spacing: 6) {
-                Image(systemName: "waveform").foregroundStyle(Palette.mint)
-                Text("UNDERTONE").tracking(2)
+                // The logo doubles as the switch for the waves, so there is no extra control.
+                Button { withAnimation(.easeInOut(duration: 0.4)) { wavesSetting = !wavesOn } } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "waveform")
+                            .foregroundStyle(wavesOn ? Palette.mint : .white.opacity(0.3))
+                        // Pointing at the logo says what a click will do; it is otherwise
+                        // not obvious that the logo is a switch.
+                        Text(logoHovered ? (wavesOn ? "HIDE WAVES" : "SHOW WAVES") : "UNDERTONE").tracking(2)
+                            .foregroundStyle(.white.opacity(logoHovered ? 0.8 : 0.45))
+                    }.contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .onHover { logoHovered = $0 }
+                .help(wavesOn ? "Turn the waves off" : "Turn the waves on")
+                .accessibilityLabel("Waves").accessibilityValue(wavesOn ? "On" : "Off")
                 Spacer()
                 Circle().fill(viewModel.isPlaying ? Palette.mint : .white.opacity(0.2))
                     .frame(width: 5, height: 5)
@@ -135,7 +158,16 @@ struct ContentView: View {
         }
         .padding(18)
         .frame(width: 320)
-        .background(LinearGradient(colors: [Color(red: 0.075, green: 0.095, blue: 0.10), Color(red: 0.045, green: 0.05, blue: 0.065)], startPoint: .topLeading, endPoint: .bottomTrailing))
+        .background {
+            ZStack {
+                LinearGradient(colors: [Color(red: 0.075, green: 0.095, blue: 0.10), Color(red: 0.045, green: 0.05, blue: 0.065)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                if wavesOn {
+                    WaveBackdrop(isRunning: viewModel.isPopoverVisible, settledOn: stillWaves,
+                                 bands: viewModel.visualizerBands)
+                        .transition(.opacity)
+                }
+            }
+        }
         .preferredColorScheme(.dark)
     }
 

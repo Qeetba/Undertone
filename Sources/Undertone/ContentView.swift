@@ -6,6 +6,22 @@ private enum Palette {
     static let coral = Color(red: 1, green: 0.50, blue: 0.42)
 }
 
+private extension View {
+    /// For the label of a plain button: makes the whole label clickable, with a little
+    /// slack around it. A plain button otherwise responds only where its label draws
+    /// something, which leaves the gap between a word and its icon dead and a small icon
+    /// hard to hit. Pair with `withoutTargetSlack()` on the button.
+    func wholeLabelClickable() -> some View {
+        padding(targetSlack).contentShape(Rectangle())
+    }
+
+    /// For the button: takes the slack back out of the layout, so the bigger target
+    /// does not move anything.
+    func withoutTargetSlack() -> some View { padding(-targetSlack) }
+}
+
+private let targetSlack: CGFloat = 5
+
 struct ContentView: View {
     @ObservedObject var viewModel: NowPlayingViewModel
     @State private var queueExpanded: Bool
@@ -137,8 +153,8 @@ struct ContentView: View {
             Rectangle().fill(.white.opacity(0.08)).frame(height: 1)
             HStack {
                 Button(action: viewModel.openFilesPanel) {
-                    Label("Open files", systemImage: "plus")
-                }.help("Open local audio files")
+                    Label("Open files", systemImage: "plus").wholeLabelClickable()
+                }.withoutTargetSlack().help("Open local audio files")
                 Spacer()
                 Button {
                     withAnimation(.easeInOut(duration: 0.18)) { queueExpanded.toggle() }
@@ -146,8 +162,8 @@ struct ContentView: View {
                     HStack(spacing: 4) {
                         Text("Queue · \(viewModel.queueItems.count)")
                         Image(systemName: queueExpanded ? "chevron.up" : "chevron.down").font(.system(size: 7, weight: .bold))
-                    }
-                }.accessibilityLabel("Toggle queue")
+                    }.wholeLabelClickable()
+                }.withoutTargetSlack().accessibilityLabel("Toggle queue")
             }
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(.white.opacity(0.45)).buttonStyle(.plain)

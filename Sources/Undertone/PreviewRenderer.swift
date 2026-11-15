@@ -11,23 +11,24 @@ enum PreviewRenderer {
         _ = NSApplication.shared
         NSApp.setActivationPolicy(.accessory)
         let model = NowPlayingViewModel()
-        model.title = "Tomorrow isn't coming"
+        model.title = "Paper Lanterns"
         model.artist = "LOCAL AUDIO · AIFF"
         model.duration = 168.5
         model.currentTime = 64
         model.isPlaying = true
         model.showDefaultPlayerOffer = showDefaultPlayerOffer
         model.isPopoverVisible = true
-        if queueOpen {
-            let names = ["Paper Lanterns", "Tomorrow isn't coming", "Low Tide", "Glass Morning"]
-            model.queueItems = names.enumerated().map { i, name in
-                QueueItem(index: i, url: URL(fileURLWithPath: "/demo/\(name).aiff"), name: name, isCurrent: i == 1)
-            }
+        let names = ["Low Tide", "Paper Lanterns", "Glass Morning", "Night Bus"]
+        model.queueItems = names.enumerated().map { i, name in
+            QueueItem(index: i, url: URL(fileURLWithPath: "/demo/\(name).aiff"), name: name, isCurrent: i == 1)
         }
 
+        // Rounded like the popover it normally sits in, so the picture reads as the real
+        // thing on any page background.
         let host = NSHostingView(rootView: ContentView(
             viewModel: model, queueExpanded: queueOpen,
-            stillWaves: AudioBands(low: 0.2, mid: 0.08, high: 0.03)))
+            stillWaves: AudioBands(low: 0.2, mid: 0.08, high: 0.03))
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous)))
         let window = NSWindow(contentRect: NSRect(origin: .zero, size: host.fittingSize),
                               styleMask: .borderless, backing: .buffered, defer: false)
         window.appearance = NSAppearance(named: .darkAqua)

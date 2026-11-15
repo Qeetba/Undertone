@@ -1,4 +1,10 @@
-# Undertone
+<h1 align="center">Undertone</h1>
+
+<p align="center">
+  <img src="docs/screenshots/player.png" width="320" align="top" alt="Undertone's popover: a track title beside its artwork, a seek bar, previous, pause and next buttons, a volume slider, and mint and coral waves moving behind the controls">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/queue.png" width="320" align="top" alt="The same popover with the queue drawer open: four tracks listed with the playing one highlighted, and an Add to queue button underneath">
+</p>
 
 A menu-bar-only audio player for macOS. Lives in the status bar — no Dock icon,
 no windows. Plays MP3, M4A, FLAC, AIFF and WAV through a compact dark popover with a
@@ -130,6 +136,7 @@ Sources/Undertone/           main.swift, AppDelegate (status item + popover), Co
 Tests/UndertoneTests/        QueueTests, QueueEditingTests, AudioBandsTests, DefaultPlayerOfferTests,
                              SmokeTests (env-gated real playback)
 Resources/Info.plist         bundle config: LSUIElement, document types
+docs/screenshots/            the pictures at the top of this file
 build.sh                     release build → dist/Undertone.app
 ```
 
@@ -148,6 +155,15 @@ cp -R dist/Undertone.app ~/Applications/
 ./build.sh --render-preview /tmp/undertone-queue.png --queue-open   # with the queue drawer open
 ```
 
+The screenshots at the top of this file are made the same way, from made-up
+tracks. Undertone is always dark, so there is one version of each. After a
+change to how the popover looks, redo them:
+
+```sh
+./build.sh --render-preview docs/screenshots/player.png
+./build.sh --render-preview docs/screenshots/queue.png --queue-open
+```
+
 ## Verification and limits
 
 - Native playback smoke checks cover MP3, M4A, FLAC and WAV load/play/pause/seek/completion.
@@ -158,3 +174,7 @@ cp -R dist/Undertone.app ~/Applications/
 - Encrypted/DRM audio and Ogg/Vorbis are not supported. Decoder support for other
   native formats depends on macOS. There are no streaming services or library indexing.
 - The bundle is signed ad hoc for local use, not notarized for distribution.
+
+---
+
+<p align="center">Made in Seattle with ❤️ by Qeetba Records</p>

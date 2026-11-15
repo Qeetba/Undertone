@@ -62,6 +62,13 @@ struct ContentView: View {
                 .onHover { logoHovered = $0 }
                 .help(wavesOn ? "Turn the waves off" : "Turn the waves on")
                 .accessibilityLabel("Waves").accessibilityValue(wavesOn ? "On" : "Off")
+                // Who makes it, quieter than the name. It sits outside the logo button and
+                // keeps its place while hidden, so the hint that replaces the name on hover
+                // never changes the button's width under the pointer.
+                Text("BY QEETBA").tracking(2).fontWeight(.medium)
+                    .foregroundStyle(.white.opacity(0.22))
+                    .opacity(logoHovered ? 0 : 1)
+                    .accessibilityLabel("by Qeetba")
                 Spacer()
                 Circle().fill(viewModel.isPlaying ? Palette.mint : .white.opacity(0.2))
                     .frame(width: 5, height: 5)

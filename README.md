@@ -29,6 +29,9 @@ swift run Undertone         # run the menu-bar app from the build tree
 swift test                  # unit tests (queue logic, error surfacing)
 ```
 
+[CONTRIBUTING.md](CONTRIBUTING.md) covers how to send a change: what Undertone will
+not trade away, how to check the popover by hand, and how pull requests are merged.
+
 ### Headless smoke test (real AVFoundation playback)
 
 Generates a load/play/pause/seek/completion pass for each format against

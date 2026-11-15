@@ -22,6 +22,10 @@ struct ContentView: View {
             .font(.system(size: 9, weight: .bold))
             .foregroundStyle(.white.opacity(0.45))
 
+            if viewModel.showDefaultPlayerOffer {
+                defaultPlayerCard
+            }
+
             HStack(spacing: 12) {
                 artwork
                 VStack(alignment: .leading, spacing: 5) {
@@ -142,6 +146,38 @@ struct ContentView: View {
         .frame(width: 320)
         .background(LinearGradient(colors: [Color(red: 0.075, green: 0.095, blue: 0.10), Color(red: 0.045, green: 0.05, blue: 0.065)], startPoint: .topLeading, endPoint: .bottomTrailing))
         .preferredColorScheme(.dark)
+    }
+
+    /// First-run offer. Stays until one of its two buttons is clicked.
+    private var defaultPlayerCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Make Undertone your default player for music files?")
+                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                Text("MP3, M4A, FLAC, AIFF and WAV files will open here.")
+                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 6) {
+                Spacer(minLength: 0)
+                Button(action: viewModel.declineDefaultPlayerOffer) {
+                    Text("Not now").font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                }
+                Button(action: viewModel.acceptDefaultPlayerOffer) {
+                    Text("Make default").font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color(red: 0.04, green: 0.12, blue: 0.10))
+                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .background(Palette.mint, in: Capsule())
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(Palette.mint.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Palette.mint.opacity(0.18)))
     }
 
     private var artwork: some View {

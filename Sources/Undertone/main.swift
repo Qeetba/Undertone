@@ -15,7 +15,10 @@ if let index = CommandLine.arguments.firstIndex(of: "--render-preview") {
     }
     do {
         try MainActor.assumeIsolated {
-            try PreviewRenderer.render(to: CommandLine.arguments[index + 1])
+            try PreviewRenderer.render(
+                to: CommandLine.arguments[index + 1],
+                showDefaultPlayerOffer: CommandLine.arguments.contains(DefaultPlayerOffer.launchArgument)
+            )
         }
         exit(0)
     } catch {
